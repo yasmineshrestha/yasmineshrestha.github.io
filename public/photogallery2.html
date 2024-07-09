@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="main/fortwophoto.css">
+    <link rel="icon" href="img/flowers.png" type="image/x-icon">
+    <title>A Present.</title>
+
+    <link href="https://fonts.googleapis.com/css?family=Dokdo" rel="stylesheet">
+
+    <style type="text/css">
+        /* Your custom CSS styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Add your styles for modal and header here */
+        h1 {
+            text-align: center;
+        }
+
+        header {
+            font-family: 'Dokdo', cursive;
+            font-size: 30px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .upload-btn {
+            font-family: 'Dokdo', cursive;
+            font-size: 24px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+            padding-top: 60px;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+        }
+
+        .gallery {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            padding: 20px;
+        }
+
+        .gallery__item {
+            position: relative;
+            flex: 0 0 auto;
+            margin: 10px;
+            cursor: pointer;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .gallery__item img {
+            display: block;
+            width: 100%;
+            /* Ensure images fill their container */
+            height: auto;
+            border-radius: 8px;
+            /* Optional: Add rounded corners */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            /* Optional: Add shadow */
+        }
+
+        .gallery__item:hover {
+            transform: scale(1.05);
+            /* Optional: Increase size on hover */
+        }
+
+        .back-link {
+            font-size: 24px;
+            color: #4CAF50;
+            text-decoration: none;
+            margin-left: 20px; /* Adjust as needed */
+            cursor: pointer;
+        }
+
+    </style>
+</head>
+
+<body>
+    <header>
+        <a href="index.html" class="back-link">&larr; Back</a>
+        <h1>
+            Our Memories <p>Let's create it more.</p>
+            <!-- Optional: Add autoplay audio here if needed -->
+        </h1>
+        <button class="upload-btn" id="uploadBtn">Upload Photo</button>
+
+    </header>
+    <hr />
+    <div id="gallery" class="gallery">
+        <!-- Images will be dynamically added here -->
+    </div>
+
+    <!-- The Modal -->
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <form id="uploadForm" enctype="multipart/form-data">
+                <label for="imageUpload">Select image to upload:</label>
+                <input type="file" id="imageUpload" name="imageUpload" accept="image/*">
+                <input type="submit" value="Upload Image">
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-storage.js"></script>
+    <script>
+        // Firebase configuration
+        var firebaseConfig = {
+            apiKey: "AIzaSyAE1G_bb0OQhJKu0pZXBLm6BrkVL5TnQXo",
+            authDomain: "yasmineshrestha-ad723.firebaseapp.com",
+            projectId: "yasmineshrestha-ad723",
+            storageBucket: "yasmineshrestha-ad723.appspot.com",
+            messagingSenderId: "512420466983",
+            appId: "1:512420466983:web:9ac85d6bed01a12eded902",
+            measurementId: "G-JF88MRGNBF"
+        };
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const storage = firebase.storage();
+
+        // Modal display logic
+        var modal = document.getElementById("myModal");
+        var btn = document.getElementById("uploadBtn");
+        var span = document.getElementsByClassName("close")[0];
+
+        btn.addEventListener('click', function () {
+            // Prompt user to enter the code
+            var userCode = prompt("Please enter the code to proceed with upload:");
+            if (userCode === "120120") {
+                modal.style.display = "block";
+            } else {
+                alert("Incorrect code. Please try again.");
+            }
+        });
+
+        span.addEventListener('click', function () {
+            modal.style.display = "none";
+        });
+
+        window.addEventListener('click', function (event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        });
+
+        // Handle form submission
+        document.getElementById('uploadForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            var file = document.getElementById('imageUpload').files[0];
+            var storageRef = storage.ref('images/' + file.name);
+            var uploadTask = storageRef.put(file);
+
+            uploadTask.on('state_changed', function (snapshot) {
+                // Handle progress if needed
+            }, function (error) {
+                console.error('Upload failed:', error);
+            }, function () {
+                // Upload completed successfully, now reload the page
+                location.reload();
+            });
+        });
+
+
+        function loadGallery() {
+            var storageRef = storage.ref('images');
+
+            storageRef.listAll().then(function (result) {
+                result.items.forEach(function (imageRef) {
+                    // Get the download URL for each image
+                    imageRef.getDownloadURL().then(function (url) {
+                        // Create gallery item div
+                        var galleryItem = document.createElement('div');
+                        galleryItem.className = 'gallery__item';
+
+                        // Create image element
+                        var imgElement = document.createElement('img');
+                        imgElement.src = url;
+                        imgElement.alt = "Uploaded Image";
+
+                        // Append image to gallery item
+                        galleryItem.appendChild(imgElement);
+
+                        // Append gallery item to gallery container
+                        var gallery = document.getElementById('gallery');
+                        gallery.appendChild(galleryItem);
+                    }).catch(function (error) {
+                        console.error('Error getting download URL:', error);
+                    });
+                });
+            }).catch(function (error) {
+                console.error('Error listing images:', error);
+            });
+        }
+
+        // Call loadGallery when the page loads
+        window.onload = function () {
+            loadGallery();
+        };
+    </script>
+</body>
+
+</html>
